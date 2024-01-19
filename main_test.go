@@ -14,6 +14,9 @@ func TestRouteStatusOK(t *testing.T) {
 		"/v1/countries",
 		"/v1/authors",
 		"/v1/books",
+		"/v1/customers",
+		"/v1/publishers",
+		"/v1/shipping-methods",
 	}
 
 	r := initRouter()

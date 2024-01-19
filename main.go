@@ -37,6 +37,15 @@ func initRouter() *fiber.App {
 	v1.Get("/books", func(c fiber.Ctx) error {
 		return handleAllBooks(c, db)
 	})
+	v1.Get("/customers", func(c fiber.Ctx) error {
+		return handleAllCustomers(c, db)
+	})
+	v1.Get("/publishers", func(c fiber.Ctx) error {
+		return handleAllPublishers(c, db)
+	})
+	v1.Get("/shipping-methods", func(c fiber.Ctx) error {
+		return handleAllShippingMethods(c, db)
+	})
 
 	return r
 }
@@ -74,4 +83,28 @@ func handleAllBooks(c fiber.Ctx, db *pgx.Conn) error {
 		return fiber.NewError(500, fmt.Sprintf("Error retrieving books: %v", err.Error()))
 	}
 	return c.JSON(books)
+}
+
+func handleAllCustomers(c fiber.Ctx, db *pgx.Conn) error {
+	customers, err := AllCustomers(db)
+	if err != nil {
+		return fiber.NewError(500, fmt.Sprintf("Error retrieving customers: %v", err.Error()))
+	}
+	return c.JSON(customers)
+}
+
+func handleAllPublishers(c fiber.Ctx, db *pgx.Conn) error {
+	publishers, err := AllPublishers(db)
+	if err != nil {
+		return fiber.NewError(500, fmt.Sprintf("Error retrieving publishers: %v", err.Error()))
+	}
+	return c.JSON(publishers)
+}
+
+func handleAllShippingMethods(c fiber.Ctx, db *pgx.Conn) error {
+	shippingMethods, err := AllShippingMethods(db)
+	if err != nil {
+		return fiber.NewError(500, fmt.Sprintf("Error retrieving shipping methods: %v", err.Error()))
+	}
+	return c.JSON(shippingMethods)
 }
