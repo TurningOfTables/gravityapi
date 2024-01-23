@@ -32,23 +32,42 @@ func initRouter() *fiber.App {
 		return handleAllCountries(c, db)
 	})
 	v1.Get("/authors", func(c fiber.Ctx) error {
+		return handleAllAuthors(c, db)
+	})
+
+	v1.Get("/authors/search", func(c fiber.Ctx) error {
+		var validAuthorSearchTerms = []string{"name"}
 		if c.Query("name") != "" {
 			return handleAuthorsByName(c, db, c.Query("name"))
 		}
-
-		return handleAllAuthors(c, db)
+		return fiber.NewError(fiber.ErrBadRequest.Code, fmt.Sprintf("No valid search term provided. Valid search terms: %v", validAuthorSearchTerms))
 	})
+
 	v1.Get("/books", func(c fiber.Ctx) error {
+		return handleAllBooks(c, db)
+	})
+	v1.Get("/books/search", func(c fiber.Ctx) error {
+		var validBookSearchTerms = []string{"author", "title", "isbn"}
+
+		// Author has a different handler function for now because of the additional columns returned by
+		// querying across mapping tables like book_author
 		if c.Query("author") != "" {
 			return handleBooksByAuthor(c, db, c.Query("author"))
 		}
 
+		// TO DO - potential improvement here as we're checking for valid search terms twice
+		// Once here in the routing, and once in the book.go handleBookSearch function
 		if c.Query("title") != "" {
-			return handleBooksByTitle(c, db, c.Query("title"))
+			return handleBookSearch(c, db, "title", c.Query("title"))
 		}
 
-		return handleAllBooks(c, db)
+		if c.Query("isbn") != "" {
+			return handleBookSearch(c, db, "isbn", c.Query("isbn"))
+		}
+
+		return fiber.NewError(fiber.ErrBadRequest.Code, fmt.Sprintf("No valid search term provided. Valid search terms: %v", validBookSearchTerms))
 	})
+
 	v1.Get("/customers", func(c fiber.Ctx) error {
 		return handleAllCustomers(c, db)
 	})
@@ -97,7 +116,7 @@ func handleAllAuthors(c fiber.Ctx, db *pgx.Conn) error {
 
 // GET /v1/authors?name=Agatha Christia
 func handleAuthorsByName(c fiber.Ctx, db *pgx.Conn, authorName string) error {
-	author, err := AuthorByName(db, c.Query("name"))
+	author, err := AuthorBySearchTerm(db, "name", c.Query("name"))
 
 	if err == pgx.ErrNoRows {
 		return fiber.NewError(fiber.ErrNotFound.Code, "No author found by that name")
@@ -121,7 +140,7 @@ func handleAllBooks(c fiber.Ctx, db *pgx.Conn) error {
 	return c.JSON(books)
 }
 
-// GET /v1/books?author=Agatha Christie
+// GET /v1/books/search?author=Agatha Christie
 func handleBooksByAuthor(c fiber.Ctx, db *pgx.Conn, authorName string) error {
 	booksByAuthor, err := BooksByAuthor(db, authorName)
 	if len(booksByAuthor) == 0 {
@@ -135,18 +154,17 @@ func handleBooksByAuthor(c fiber.Ctx, db *pgx.Conn, authorName string) error {
 	return c.JSON(booksByAuthor)
 }
 
-// GET /v1/books?title=The Tempest
-func handleBooksByTitle(c fiber.Ctx, db *pgx.Conn, bookTitle string) error {
-	booksByTitle, err := BooksByTitle(db, bookTitle)
-	if len(booksByTitle) == 0 {
+// GET /v1/books/search?title=The Tempest
+func handleBookSearch(c fiber.Ctx, db *pgx.Conn, searchTerm, searchValue string) error {
+	booksBySearchTerm, err := BooksBySearchTerm(db, searchTerm, searchValue)
+	if len(booksBySearchTerm) == 0 {
 		return fiber.NewError(fiber.ErrNotFound.Code, "No books found by that title")
 	}
-
 	if err != nil {
-		return fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving books by title: %v", err.Error()))
+		return fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving books by search: %v", err.Error()))
 	}
 
-	return c.JSON(booksByTitle)
+	return c.JSON(booksBySearchTerm)
 }
 
 // /v1/customers

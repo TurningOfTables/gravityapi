@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -34,13 +35,28 @@ func AllAuthors(db *pgx.Conn) ([]Author, error) {
 	return authors, nil
 }
 
-func AuthorByName(db *pgx.Conn, authorName string) (Author, error) {
-	var author Author
-
-	row := db.QueryRow(context.Background(), "SELECT * FROM author WHERE author.author_name=$1", authorName)
-	if err := row.Scan(&author.Id, &author.AuthorName); err != nil {
-		return author, err
+func AuthorBySearchTerm(db *pgx.Conn, searchTerm, searchValue string) ([]Author, error) {
+	var authors []Author
+	var sql string
+	switch searchTerm {
+	case "name":
+		sql = "SELECT * FROM author WHERE author.author_name=$1"
+	default:
+		return authors, errors.New("invalid search term")
 	}
 
-	return author, nil
+	rows, err := db.Query(context.Background(), sql, searchValue)
+	if err != nil {
+		return authors, err
+	}
+
+	for rows.Next() {
+		var a Author
+		err := rows.Scan(&a.Id, &a.AuthorName)
+		if err != nil {
+			return authors, err
+		}
+		authors = append(authors, a)
+	}
+	return authors, nil
 }

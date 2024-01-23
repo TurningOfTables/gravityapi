@@ -44,9 +44,9 @@ func TestRouteStatusNotFound(t *testing.T) {
 		"/foo",
 		"/v1",
 		"/v1/foo",
-		"/v1/authors?name=foo",
-		"/v1/books?author=foo",
-		"/v1/books?title=foo",
+		"/v1/search/authors?name=foo",
+		"/v1/search/books?author=foo",
+		"/v1/search/books?title=foo",
 	}
 
 	r := initRouter()
