@@ -33,3 +33,14 @@ func AllAuthors(db *pgx.Conn) ([]Author, error) {
 	}
 	return authors, nil
 }
+
+func AuthorByName(db *pgx.Conn, authorName string) (Author, error) {
+	var author Author
+
+	row := db.QueryRow(context.Background(), "SELECT * FROM author WHERE author.author_name=$1", authorName)
+	if err := row.Scan(&author.Id, &author.AuthorName); err != nil {
+		return author, err
+	}
+
+	return author, nil
+}
