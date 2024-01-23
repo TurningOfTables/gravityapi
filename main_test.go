@@ -161,3 +161,34 @@ func TestCustomerSearch(t *testing.T) {
 		})
 	}
 }
+
+func TestSearchErrors(t *testing.T) {
+	var tests = []struct {
+		search             string
+		expectedStatusCode int
+		expectedMessage    string
+	}{
+		{search: "/v1/customers/search?foo=1&bar=2", expectedStatusCode: fiber.ErrBadRequest.Code, expectedMessage: "Multiple search terms not supported"},
+		{search: "/v1/customers/search?foo=1", expectedStatusCode: fiber.ErrBadRequest.Code, expectedMessage: "No valid search term / value found. Valid search terms: [email]"},
+	}
+
+	r := initRouter()
+
+	for _, test := range tests {
+		t.Run(test.search, func(t *testing.T) {
+			req, _ := http.NewRequest("GET", test.search, nil)
+			resp, err := r.Test(req)
+			if err != nil {
+				t.Error(err)
+			}
+
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				t.Error(err)
+			}
+
+			assert.Equal(t, test.expectedStatusCode, resp.StatusCode)
+			assert.Equal(t, test.expectedMessage, string(body))
+		})
+	}
+}
