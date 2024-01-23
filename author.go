@@ -35,7 +35,7 @@ func AllAuthors(db *pgx.Conn) ([]Author, error) {
 	return authors, nil
 }
 
-func AuthorBySearchTerm(db *pgx.Conn, searchTerm, searchValue string) ([]Author, error) {
+func AuthorsBySearchTerm(db *pgx.Conn, searchTerm, searchValue string) ([]Author, error) {
 	var authors []Author
 	var sql string
 	switch searchTerm {
