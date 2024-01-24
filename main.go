@@ -7,9 +7,11 @@ import (
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/logger"
+	"github.com/gofiber/template/html/v2"
 	"github.com/jackc/pgx/v5"
 )
 
+// var dbString string = "postgres://postgres:password@db:5432/gravity_books"
 var dbString string = "postgres://postgres:password@localhost:5432/gravity_books"
 
 func main() {
@@ -19,9 +21,15 @@ func main() {
 }
 
 func initRouter() *fiber.App {
-	r := fiber.New(fiber.Config{AppName: "Gravity API"})
+	templateEngine := html.New("./views", ".html")
+
+	r := fiber.New(fiber.Config{AppName: "Gravity API", Views: templateEngine})
 	r.Use(logger.New())
 	db := connectToDb()
+
+	r.Get("/", func(c fiber.Ctx) error {
+		return c.Render("index", fiber.Map{"routes": r.GetRoutes()})
+	})
 
 	r.Get("/ping", func(c fiber.Ctx) error {
 		return c.SendString("pong")
@@ -56,6 +64,10 @@ func initRouter() *fiber.App {
 	v1.Get("/shipping-methods", func(c fiber.Ctx) error {
 		return handleAllShippingMethods(c, db)
 	})
+
+	for _, v := range r.GetRoutes() {
+		fmt.Println(v.Method, v.Path)
+	}
 
 	return r
 }
@@ -97,7 +109,7 @@ func handleAllAuthors(c fiber.Ctx, db *pgx.Conn) error {
 func handleAuthorsSearch(c fiber.Ctx, db *pgx.Conn) error {
 	var validAuthorSearchTerms = []string{"name"}
 
-	res, err := handleSearch(db, c, validAuthorSearchTerms, Author{}, AuthorsBySearchTerm)
+	res, err := HandleSearch(db, c, validAuthorSearchTerms, Author{}, AuthorsBySearchTerm)
 	if err != nil {
 		return err
 	}
@@ -120,7 +132,7 @@ func handleAllBooks(c fiber.Ctx, db *pgx.Conn) error {
 func handleBooksSearch(c fiber.Ctx, db *pgx.Conn) error {
 	var validBookSearchTerms = []string{"title", "isbn", "author"}
 
-	res, err := handleSearch(db, c, validBookSearchTerms, Book{}, BooksBySearchTerm)
+	res, err := HandleSearch(db, c, validBookSearchTerms, Book{}, BooksBySearchTerm)
 	if err != nil {
 		return err
 	}
@@ -143,7 +155,7 @@ func handleAllCustomers(c fiber.Ctx, db *pgx.Conn) error {
 func handleCustomersSearch(c fiber.Ctx, db *pgx.Conn) error {
 	var validCustomerSearchTerms = []string{"email"}
 
-	res, err := handleSearch(db, c, validCustomerSearchTerms, Customer{}, CustomersBySearchTerm)
+	res, err := HandleSearch(db, c, validCustomerSearchTerms, Customer{}, CustomersBySearchTerm)
 	if err != nil {
 		return err
 	}
