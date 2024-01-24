@@ -11,13 +11,14 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// var dbString string = "postgres://postgres:password@db:5432/gravity_books"
-var dbString string = "postgres://postgres:password@localhost:5432/gravity_books"
+var dbString string = "postgres://postgres:password@db:5432/gravity_books"
+
+//var dbString string = "postgres://postgres:password@localhost:5432/gravity_books"
 
 func main() {
 	r := initRouter()
 
-	r.Listen("127.0.0.1:3000")
+	r.Listen(":3000")
 }
 
 func initRouter() *fiber.App {
@@ -64,10 +65,6 @@ func initRouter() *fiber.App {
 	v1.Get("/shipping-methods", func(c fiber.Ctx) error {
 		return handleAllShippingMethods(c, db)
 	})
-
-	for _, v := range r.GetRoutes() {
-		fmt.Println(v.Method, v.Path)
-	}
 
 	return r
 }
