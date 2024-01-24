@@ -2,26 +2,36 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/logger"
 	"github.com/gofiber/template/html/v2"
 	"github.com/jackc/pgx/v5"
+	"github.com/joho/godotenv"
 )
 
-var dbString string = "postgres://postgres:password@db:5432/gravity_books"
-
-//var dbString string = "postgres://postgres:password@localhost:5432/gravity_books"
-
 func main() {
-	r := initRouter()
+	dockerMode := flag.Bool("docker", false, "Set to true to use docker env file")
+	flag.Parse()
 
-	r.Listen(":3000")
+	if *dockerMode {
+		log.Print("Starting in docker mode")
+		godotenv.Load(".env.docker")
+	} else {
+		log.Print("Starting in local mode")
+		godotenv.Load(".env.local")
+	}
+
+	r := initRouter()
+	r.Listen(os.Getenv("GRAVITY_API_APP_HOST"))
 }
 
 func initRouter() *fiber.App {
+
 	templateEngine := html.New("./views", ".html")
 
 	r := fiber.New(fiber.Config{AppName: "Gravity API", Views: templateEngine})
@@ -70,6 +80,14 @@ func initRouter() *fiber.App {
 }
 
 func connectToDb() *pgx.Conn {
+	// Using initRouter() directly like we do when testing means
+	// the env file hasn't been read, so if it's empty we read it in
+	// TO DO: Avoid this check if we can refactor the order of app initialising
+	if os.Getenv("GRAVITY_API_DB_CONNECTION_STRING") == "" {
+		godotenv.Load(".env.local")
+	}
+	var dbString string = os.Getenv("GRAVITY_API_DB_CONNECTION_STRING")
+	log.Printf("Connecting to db at : %v", dbString)
 	conn, err := pgx.Connect(context.Background(), dbString)
 	if err != nil {
 		log.Printf("Unable to connect to database: %v\n", err)
