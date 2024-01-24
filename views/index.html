@@ -1,0 +1,9 @@
+<h1>Gravity API</h1>
+<h3>Debug list of routes</h3>
+<ul>
+    {{range .routes}}
+        {{ if ne .Path "/" }}
+            <li><a href={{.Path}}>{{.Path}}</a></li>
+        {{end}}
+    {{end}}
+</ul>

@@ -11,7 +11,7 @@ type Searchable interface {
 	Author | Book | Customer
 }
 
-func handleSearch[s Searchable](db *pgx.Conn, c fiber.Ctx, validSearchTerms []string, searchModel s, searchFunc func(db *pgx.Conn, searchTerm, searchValue string) ([]s, error)) ([]s, error) {
+func HandleSearch[s Searchable](db *pgx.Conn, c fiber.Ctx, validSearchTerms []string, searchModel s, searchFunc func(db *pgx.Conn, searchTerm, searchValue string) ([]s, error)) ([]s, error) {
 	var results []s
 
 	if len(c.Queries()) > 1 {
