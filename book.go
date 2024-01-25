@@ -24,6 +24,8 @@ type Language struct {
 	LanguageName string
 }
 
+// AllBooks returns all books from the database as []Book
+// []Book is returned in all cases, so requires a check for error being nil
 func AllBooks(db *pgx.Conn) ([]Book, error) {
 	var books []Book
 	rows, err := db.Query(context.Background(),
@@ -48,6 +50,9 @@ func AllBooks(db *pgx.Conn) ([]Book, error) {
 	return books, nil
 }
 
+// BooksBySearchTerm returns []Book from the database where searchTerm = searchValue
+// To avoid unparameterised user input, only defined search terms are handled, otherwise in 'invalid search term' error  is returned.
+// []Book is returned in all cases, so requires a check for error being nil
 func BooksBySearchTerm(db *pgx.Conn, searchTerm, searchValue string) ([]Book, error) {
 
 	var books []Book

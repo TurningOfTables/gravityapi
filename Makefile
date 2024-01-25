@@ -7,7 +7,7 @@ test-verbose:
 
 # Calculates test coverage and displays breakdown by file/function
 test-coverage:
-	go test -coverprofile=c.out
+	go test . -coverprofile=c.out
 	go tool cover -func=c.out
 
 # Standard local run

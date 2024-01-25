@@ -11,6 +11,8 @@ type Country struct {
 	CountryName string
 }
 
+// AllCountries returns all countries from the database as []Country
+// []Countries is returned in all cases, so requires a check for error being nil
 func AllCountries(db *pgx.Conn) ([]Country, error) {
 	var countries []Country
 	rows, err := db.Query(context.Background(), "SELECT * FROM country")

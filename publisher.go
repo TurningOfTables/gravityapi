@@ -11,6 +11,8 @@ type Publisher struct {
 	PublisherName string
 }
 
+// AllPublishers returns all publishers from the database as []Publisher
+// []Publisher is returned in all cases, so requires a check for error being nil
 func AllPublishers(db *pgx.Conn) ([]Publisher, error) {
 	var publishers []Publisher
 	rows, err := db.Query(context.Background(), "SELECT * FROM publisher")

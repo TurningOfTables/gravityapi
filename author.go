@@ -12,6 +12,8 @@ type Author struct {
 	AuthorName string
 }
 
+// AllAuthors returns all authors from the database as []Author
+// []Author is returned in all cases, so requires a check for error being nil
 func AllAuthors(db *pgx.Conn) ([]Author, error) {
 	var authors []Author
 	rows, err := db.Query(context.Background(), "SELECT * FROM author")
@@ -35,6 +37,9 @@ func AllAuthors(db *pgx.Conn) ([]Author, error) {
 	return authors, nil
 }
 
+// AuthorsBySearchTerm returns []Author from the database where searchTerm = searchValue
+// To avoid unparameterised user input, only defined search terms are handled, otherwise in 'invalid search term' error  is returned.
+// []Author is returned in all cases, so requires a check for error being nil
 func AuthorsBySearchTerm(db *pgx.Conn, searchTerm, searchValue string) ([]Author, error) {
 	var authors []Author
 	var sql string

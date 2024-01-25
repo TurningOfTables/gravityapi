@@ -12,6 +12,8 @@ type ShippingMethod struct {
 	Cost       float64
 }
 
+// AllShippingMethods returns all shipping methods from the database as []ShippingMethod
+// []ShoppingMethod is returned in all cases, so requires a check for error being nil
 func AllShippingMethods(db *pgx.Conn) ([]ShippingMethod, error) {
 	var shippingMethods []ShippingMethod
 	rows, err := db.Query(context.Background(), "SELECT * FROM shipping_method")

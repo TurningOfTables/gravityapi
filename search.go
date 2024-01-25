@@ -7,10 +7,13 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+// Defines the possible models we allow to be searchable
 type Searchable interface {
 	Author | Book | Customer
 }
 
+// HandleSearch gives us a more generic way to perform searches without defining a handler for each model.
+// It takes validSearchTerms, a Searchable model and a search function, then returns the resulting []s Searchable
 func HandleSearch[s Searchable](db *pgx.Conn, c fiber.Ctx, validSearchTerms []string, searchModel s, searchFunc func(db *pgx.Conn, searchTerm, searchValue string) ([]s, error)) ([]s, error) {
 	var results []s
 

@@ -14,6 +14,8 @@ type Customer struct {
 	Email     string
 }
 
+// AllCustomers returns all customers from the database as []Customer
+// []Customer is returned in all cases, so requires a check for error being nil
 func AllCustomers(db *pgx.Conn) ([]Customer, error) {
 	var customers []Customer
 	rows, err := db.Query(context.Background(), "SELECT * FROM customer")
@@ -37,6 +39,9 @@ func AllCustomers(db *pgx.Conn) ([]Customer, error) {
 	return customers, nil
 }
 
+// CustomersBySearchTerm returns []Customer from the database where searchTerm = searchValue
+// To avoid unparameterised user input, only defined search terms are handled, otherwise in 'invalid search term' error  is returned.
+// []Customer is returned in all cases, so requires a check for error being nil
 func CustomersBySearchTerm(db *pgx.Conn, searchTerm, searchValue string) ([]Customer, error) {
 	var customers []Customer
 	var sql string

@@ -1,8 +1,32 @@
-# gravity api
+# WORK IN PROGRESS - gravity api
+
+## Warning
+
+This is an in progress project, so functionality will be in constant flux!
 
 ## Description
 
-An API Written in Go using the [Go Fiber Framework](https://gofiber.io/), and using the PostgreSQL gravity database at [Database Star's SQL Code Repository](https://github.com/bbrumm/databasestar).
+A work in progress API written in Go using the [Go Fiber Framework](https://gofiber.io/), and using the PostgreSQL gravity database at [Database Star's SQL Code Repository](https://github.com/bbrumm/databasestar).
+
+My goal is to put my learning to work and write Go more efficiently than my previous API projects.
+
+## Features
+
+* Both database and app are dockerised, with a working docker compose file
+* Able to switch between docker and local runs using only a command line flag
+* Makes use of interfaces to provide a more generic search function, reducing repetition of code for searching different models - see `search.go` for how this is implemented
+* Makes use of test sets to avoid declaring dozens of repeated test functions, one for each route
+* Uses a larger data set than before, requiring more thought on response size and handling.
+
+## Incoming Features
+
+* Paging and offset support, as some return payloads are > 10,000 lines!
+* POST support to add new data
+* Expanded use of related tables to provide fuller responses to queries, instead of just IDs for some fields
+* Once the endpoints have stabilised somewhat, documentation in the form of OpenAPI specs and HTML docs likely generated automatically
+* Improved error response - currently just text, but will be a JSON response with an error code and message for consistency with other JSON responses
+* Potentially implement useful Fiber middleware including caching, monitoring, auth for sensitive endpoints and rate limiting.
+
 
 ## Run - Local
 

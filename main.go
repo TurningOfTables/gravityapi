@@ -30,6 +30,8 @@ func main() {
 	r.Listen(os.Getenv("GRAVITY_API_APP_HOST"))
 }
 
+// initRouter sets up a new Fiber app, connects to the database and registers API routes to handler functions
+// It returns the resulting *fiber.App instance
 func initRouter() *fiber.App {
 
 	templateEngine := html.New("./views", ".html")
@@ -79,6 +81,9 @@ func initRouter() *fiber.App {
 	return r
 }
 
+// connectToDb connects to the database specified by env var GRAVITY_API_DB_CONNECTION_STRING
+// If the var isn't set, it falls back to the .env.local file
+// It returns the resulting database connection
 func connectToDb() *pgx.Conn {
 	// Using initRouter() directly like we do when testing means
 	// the env file hasn't been read, so if it's empty we read it in
@@ -100,7 +105,7 @@ func connectToDb() *pgx.Conn {
 
 // /v1/countries
 
-// GET /v1/countries
+// handleAllCountries handles GET /v1/countries
 func handleAllCountries(c fiber.Ctx, db *pgx.Conn) error {
 	countries, err := AllCountries(db)
 	if err != nil {
@@ -111,7 +116,7 @@ func handleAllCountries(c fiber.Ctx, db *pgx.Conn) error {
 
 // /v1/authors
 
-// GET /v1/authors
+// handleAllAuthors handles GET /v1/authors
 func handleAllAuthors(c fiber.Ctx, db *pgx.Conn) error {
 	authors, err := AllAuthors(db)
 	if err != nil {
@@ -120,7 +125,8 @@ func handleAllAuthors(c fiber.Ctx, db *pgx.Conn) error {
 	return c.JSON(authors)
 }
 
-// GET /v1/authors?name=Agatha Christia
+// handleAuthorsSearch handles GET /v1/authors/search?<searchTerm>=<searchValue>
+// Valid query params for search terms are defined within the function
 func handleAuthorsSearch(c fiber.Ctx, db *pgx.Conn) error {
 	var validAuthorSearchTerms = []string{"name"}
 
@@ -134,7 +140,7 @@ func handleAuthorsSearch(c fiber.Ctx, db *pgx.Conn) error {
 
 // /v1/books
 
-// GET /v1/books
+// handleAllBooks handles GET /v1/books
 func handleAllBooks(c fiber.Ctx, db *pgx.Conn) error {
 	books, err := AllBooks(db)
 	if err != nil {
@@ -143,7 +149,8 @@ func handleAllBooks(c fiber.Ctx, db *pgx.Conn) error {
 	return c.JSON(books)
 }
 
-// GET /v1/books/search?title=The Tempest
+// handleBooksSearch handles GET /v1/books/search?<searchTerm>=<searchValue>
+// Valid query params for search terms are defined within the function
 func handleBooksSearch(c fiber.Ctx, db *pgx.Conn) error {
 	var validBookSearchTerms = []string{"title", "isbn", "author"}
 
@@ -157,7 +164,7 @@ func handleBooksSearch(c fiber.Ctx, db *pgx.Conn) error {
 
 // /v1/customers
 
-// GET /v1/customers
+// handleAllCustomers handles GET /v1/customers
 func handleAllCustomers(c fiber.Ctx, db *pgx.Conn) error {
 	customers, err := AllCustomers(db)
 	if err != nil {
@@ -166,7 +173,8 @@ func handleAllCustomers(c fiber.Ctx, db *pgx.Conn) error {
 	return c.JSON(customers)
 }
 
-// GET /v1/customers/search?email=rvatini1@fema.gov
+// handleCustomerSearch handles GET /v1/customers/search?<searchTerm>=<searchValue>
+// Valid query params for search terms are defined within the function
 func handleCustomersSearch(c fiber.Ctx, db *pgx.Conn) error {
 	var validCustomerSearchTerms = []string{"email"}
 
@@ -180,7 +188,7 @@ func handleCustomersSearch(c fiber.Ctx, db *pgx.Conn) error {
 
 // /v1/publishers
 
-// GET /v1/publishers
+// handleAllPublishers handles GET /v1/publishers
 func handleAllPublishers(c fiber.Ctx, db *pgx.Conn) error {
 	publishers, err := AllPublishers(db)
 	if err != nil {
@@ -191,7 +199,7 @@ func handleAllPublishers(c fiber.Ctx, db *pgx.Conn) error {
 
 // /v1/shipping-methods
 
-// GET /v1/shipping-methods
+// handleAllShippingMethods handles GET /v1/shipping-methods
 func handleAllShippingMethods(c fiber.Ctx, db *pgx.Conn) error {
 	shippingMethods, err := AllShippingMethods(db)
 	if err != nil {
