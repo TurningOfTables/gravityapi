@@ -192,3 +192,113 @@ func TestSearchErrors(t *testing.T) {
 		})
 	}
 }
+
+func TestLimit(t *testing.T) {
+
+	var tests = []struct {
+		route        string
+		expectedSize int
+	}{
+		{route: "/v1/books", expectedSize: 100}, // current default maximum set to 100 in main.go
+		{route: "/v1/books?limit=5", expectedSize: 5},
+		{route: "/v1/books?limit=150", expectedSize: 100}, // checks that default maximum overrides excessive limit params
+		{route: "/v1/books?limit=", expectedSize: 100},    // checks that default is applied if no value is provided
+		{route: "/v1/books/search?author=Agatha Christie&limit=2", expectedSize: 2},
+	}
+
+	r := initRouter()
+
+	for _, test := range tests {
+		t.Run(test.route, func(t *testing.T) {
+			req, _ := http.NewRequest("GET", test.route, nil)
+			resp, err := r.Test(req)
+			if err != nil {
+				t.Error(err)
+			}
+
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				t.Error(err)
+			}
+
+			var books []Book
+			json.Unmarshal(body, &books)
+
+			assert.Len(t, books, test.expectedSize)
+		})
+	}
+
+}
+
+func TestOffset(t *testing.T) {
+
+	var tests = []struct {
+		route           string
+		expectedFirstId int
+	}{
+		{route: "/v1/books", expectedFirstId: 1},
+		{route: "/v1/books?offset=5", expectedFirstId: 6},
+		{route: "/v1/books?offset=150", expectedFirstId: 151},
+		{route: "/v1/books?offset=", expectedFirstId: 1},
+		{route: "/v1/books?offset=0", expectedFirstId: 1},
+		{route: "/v1/books/search?author=Agatha Christie&offset=5", expectedFirstId: 9559},
+	}
+
+	r := initRouter()
+
+	for _, test := range tests {
+		t.Run(test.route, func(t *testing.T) {
+			req, _ := http.NewRequest("GET", test.route, nil)
+			resp, err := r.Test(req)
+			if err != nil {
+				t.Error(err)
+			}
+
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				t.Error(err)
+			}
+
+			var books []Book
+			json.Unmarshal(body, &books)
+
+			assert.Equal(t, test.expectedFirstId, books[0].Id)
+		})
+	}
+
+}
+
+func TestCombinedLimitOffset(t *testing.T) {
+	var tests = []struct {
+		route           string
+		expectedSize    int
+		expectedFirstId int
+	}{
+		{route: "/v1/books?limit=50&offset=5", expectedSize: 50, expectedFirstId: 6},
+		{route: "/v1/books?offset=5&limit=50", expectedSize: 50, expectedFirstId: 6},
+		{route: "/v1/books/search?author=Agatha Christie&limit=10&offset=3", expectedSize: 10, expectedFirstId: 35},
+	}
+
+	r := initRouter()
+
+	for _, test := range tests {
+		t.Run(test.route, func(t *testing.T) {
+			req, _ := http.NewRequest("GET", test.route, nil)
+			resp, err := r.Test(req)
+			if err != nil {
+				t.Error(err)
+			}
+
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				t.Error(err)
+			}
+
+			var books []Book
+			json.Unmarshal(body, &books)
+
+			assert.Len(t, books, test.expectedSize)
+			assert.Equal(t, test.expectedFirstId, books[0].Id)
+		})
+	}
+}

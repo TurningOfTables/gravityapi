@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 
+	"github.com/gofiber/fiber/v3"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -14,9 +15,9 @@ type ShippingMethod struct {
 
 // AllShippingMethods returns all shipping methods from the database as []ShippingMethod
 // []ShoppingMethod is returned in all cases, so requires a check for error being nil
-func AllShippingMethods(db *pgx.Conn) ([]ShippingMethod, error) {
+func AllShippingMethods(db *pgx.Conn, c fiber.Ctx) ([]ShippingMethod, error) {
 	var shippingMethods []ShippingMethod
-	rows, err := db.Query(context.Background(), "SELECT * FROM shipping_method")
+	rows, err := db.Query(context.Background(), "SELECT * FROM shipping_method LIMIT $1 OFFSET $2", c.Locals("limit"), c.Locals("offset"))
 	if err != nil {
 		return shippingMethods, err
 	}

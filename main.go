@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/logger"
@@ -13,6 +14,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/joho/godotenv"
 )
+
+var responseSizeLimit int = 100
 
 func main() {
 	dockerMode := flag.Bool("docker", false, "Set to true to use docker env file")
@@ -38,6 +41,7 @@ func initRouter() *fiber.App {
 
 	r := fiber.New(fiber.Config{AppName: "Gravity API", Views: templateEngine})
 	r.Use(logger.New())
+	r.Use(parseLimitOffset)
 	db := connectToDb()
 
 	r.Get("/", func(c fiber.Ctx) error {
@@ -107,7 +111,7 @@ func connectToDb() *pgx.Conn {
 
 // handleAllCountries handles GET /v1/countries
 func handleAllCountries(c fiber.Ctx, db *pgx.Conn) error {
-	countries, err := AllCountries(db)
+	countries, err := AllCountries(db, c)
 	if err != nil {
 		return fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving countries: %v", err.Error()))
 	}
@@ -118,7 +122,8 @@ func handleAllCountries(c fiber.Ctx, db *pgx.Conn) error {
 
 // handleAllAuthors handles GET /v1/authors
 func handleAllAuthors(c fiber.Ctx, db *pgx.Conn) error {
-	authors, err := AllAuthors(db)
+
+	authors, err := AllAuthors(db, c)
 	if err != nil {
 		return fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving authors: %v", err.Error()))
 	}
@@ -142,7 +147,7 @@ func handleAuthorsSearch(c fiber.Ctx, db *pgx.Conn) error {
 
 // handleAllBooks handles GET /v1/books
 func handleAllBooks(c fiber.Ctx, db *pgx.Conn) error {
-	books, err := AllBooks(db)
+	books, err := AllBooks(db, c)
 	if err != nil {
 		return fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving books: %v", err.Error()))
 	}
@@ -166,7 +171,7 @@ func handleBooksSearch(c fiber.Ctx, db *pgx.Conn) error {
 
 // handleAllCustomers handles GET /v1/customers
 func handleAllCustomers(c fiber.Ctx, db *pgx.Conn) error {
-	customers, err := AllCustomers(db)
+	customers, err := AllCustomers(db, c)
 	if err != nil {
 		return fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving customers: %v", err.Error()))
 	}
@@ -190,7 +195,7 @@ func handleCustomersSearch(c fiber.Ctx, db *pgx.Conn) error {
 
 // handleAllPublishers handles GET /v1/publishers
 func handleAllPublishers(c fiber.Ctx, db *pgx.Conn) error {
-	publishers, err := AllPublishers(db)
+	publishers, err := AllPublishers(db, c)
 	if err != nil {
 		return fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving publishers: %v", err.Error()))
 	}
@@ -201,9 +206,35 @@ func handleAllPublishers(c fiber.Ctx, db *pgx.Conn) error {
 
 // handleAllShippingMethods handles GET /v1/shipping-methods
 func handleAllShippingMethods(c fiber.Ctx, db *pgx.Conn) error {
-	shippingMethods, err := AllShippingMethods(db)
+	shippingMethods, err := AllShippingMethods(db, c)
 	if err != nil {
 		return fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving shipping methods: %v", err.Error()))
 	}
 	return c.JSON(shippingMethods)
+}
+
+// parseLimitOffset checks for query params 'limit' and 'offset'
+// Sets a c.Locals for future handlers if they are valid, otherwise sets them to defaults
+// Used as LIMIT and OFFSET in subsequent SQL queries
+func parseLimitOffset(c fiber.Ctx) error {
+	var limit int
+	var offset int
+
+	requestedLimit, err := strconv.Atoi(c.Query("limit"))
+	if err != nil || c.Query("limit") == "" || requestedLimit > responseSizeLimit {
+		limit = responseSizeLimit
+	} else {
+		limit = requestedLimit
+	}
+
+	requestedOffset, err := strconv.Atoi(c.Query("offset"))
+	if err != nil || c.Query("offset") == "" {
+		offset = 0
+	} else {
+		offset = requestedOffset
+	}
+
+	c.Locals("limit", fmt.Sprintf("%d", limit))
+	c.Locals("offset", fmt.Sprintf("%d", offset))
+	return c.Next()
 }
