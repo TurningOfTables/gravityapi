@@ -18,16 +18,7 @@ import (
 var responseSizeLimit int = 100
 
 func main() {
-	dockerMode := flag.Bool("docker", false, "Set to true to use docker env file")
 	flag.Parse()
-
-	if *dockerMode {
-		log.Print("Starting in docker mode")
-		godotenv.Load(".env.docker")
-	} else {
-		log.Print("Starting in local mode")
-		godotenv.Load(".env.local")
-	}
 
 	r := initRouter()
 	r.Listen(os.Getenv("GRAVITY_API_APP_HOST"))
@@ -36,6 +27,7 @@ func main() {
 // initRouter sets up a new Fiber app, connects to the database and registers API routes to handler functions
 // It returns the resulting *fiber.App instance
 func initRouter() *fiber.App {
+	LoadEnv()
 
 	templateEngine := html.New("./views", ".html")
 
@@ -93,7 +85,11 @@ func connectToDb() *pgx.Conn {
 	// the env file hasn't been read, so if it's empty we read it in
 	// TO DO: Avoid this check if we can refactor the order of app initialising
 	if os.Getenv("GRAVITY_API_DB_CONNECTION_STRING") == "" {
-		godotenv.Load(".env.local")
+		if IsRunningInDocker() {
+			godotenv.Load(".env.docker")
+		} else {
+			godotenv.Load(".env.local")
+		}
 	}
 	var dbString string = os.Getenv("GRAVITY_API_DB_CONNECTION_STRING")
 	log.Printf("Connecting to db at : %v", dbString)
