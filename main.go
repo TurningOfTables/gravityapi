@@ -108,8 +108,8 @@ func connectToDb() *pgx.Conn {
 // handleAllCountries handles GET /v1/countries
 func handleAllCountries(c fiber.Ctx, db *pgx.Conn) error {
 	countries, err := AllCountries(db, c)
-	if err != nil {
-		return fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving countries: %v", err.Error()))
+	if err == nil {
+		return c.Status(fiber.ErrInternalServerError.Code).JSON(fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving countries: %v", err.Error())))
 	}
 	return c.JSON(countries)
 }
@@ -121,7 +121,7 @@ func handleAllAuthors(c fiber.Ctx, db *pgx.Conn) error {
 
 	authors, err := AllAuthors(db, c)
 	if err != nil {
-		return fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving authors: %v", err.Error()))
+		return c.Status(fiber.ErrInternalServerError.Code).JSON(fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving authors: %v", err.Error())))
 	}
 	return c.JSON(authors)
 }
@@ -145,7 +145,7 @@ func handleAuthorsSearch(c fiber.Ctx, db *pgx.Conn) error {
 func handleAllBooks(c fiber.Ctx, db *pgx.Conn) error {
 	books, err := AllBooks(db, c)
 	if err != nil {
-		return fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving books: %v", err.Error()))
+		return c.Status(fiber.ErrInternalServerError.Code).JSON(fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving books: %v", err.Error())))
 	}
 	return c.JSON(books)
 }
@@ -169,7 +169,7 @@ func handleBooksSearch(c fiber.Ctx, db *pgx.Conn) error {
 func handleAllCustomers(c fiber.Ctx, db *pgx.Conn) error {
 	customers, err := AllCustomers(db, c)
 	if err != nil {
-		return fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving customers: %v", err.Error()))
+		return c.Status(fiber.ErrInternalServerError.Code).JSON(fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving customers: %v", err.Error())))
 	}
 	return c.JSON(customers)
 }
@@ -193,7 +193,7 @@ func handleCustomersSearch(c fiber.Ctx, db *pgx.Conn) error {
 func handleAllPublishers(c fiber.Ctx, db *pgx.Conn) error {
 	publishers, err := AllPublishers(db, c)
 	if err != nil {
-		return fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving publishers: %v", err.Error()))
+		return c.Status(fiber.ErrInternalServerError.Code).JSON(fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving publishers: %v", err.Error())))
 	}
 	return c.JSON(publishers)
 }
@@ -204,7 +204,7 @@ func handleAllPublishers(c fiber.Ctx, db *pgx.Conn) error {
 func handleAllShippingMethods(c fiber.Ctx, db *pgx.Conn) error {
 	shippingMethods, err := AllShippingMethods(db, c)
 	if err != nil {
-		return fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving shipping methods: %v", err.Error()))
+		return c.Status(fiber.ErrInternalServerError.Code).JSON(fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving shipping methods: %v", err.Error())))
 	}
 	return c.JSON(shippingMethods)
 }
