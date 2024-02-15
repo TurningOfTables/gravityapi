@@ -10,6 +10,6 @@ services:
     build: ./db
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
+      interval: 1s
+      timeout: 1s
       retries: 5
