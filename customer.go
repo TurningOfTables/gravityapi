@@ -9,10 +9,10 @@ import (
 )
 
 type Customer struct {
-	Id        int
-	FirstName string
-	LastName  string
-	Email     string
+	Id        int    `json:"id"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Email     string `json:"email"`
 }
 
 // AllCustomers returns all customers from the database as []Customer

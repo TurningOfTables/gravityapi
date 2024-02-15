@@ -8,8 +8,8 @@ import (
 )
 
 type Country struct {
-	Id          int
-	CountryName string
+	Id          int    `json:"id"`
+	CountryName string `json:"countryName"`
 }
 
 // AllCountries returns all countries from the database as []Country

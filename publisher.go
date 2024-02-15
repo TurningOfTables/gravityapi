@@ -8,8 +8,8 @@ import (
 )
 
 type Publisher struct {
-	Id            int
-	PublisherName string
+	Id            int    `json:"id"`
+	PublisherName string `json:"publisherName"`
 }
 
 // AllPublishers returns all publishers from the database as []Publisher

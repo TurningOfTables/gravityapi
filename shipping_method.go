@@ -8,9 +8,9 @@ import (
 )
 
 type ShippingMethod struct {
-	Id         int
-	MethodName string
-	Cost       float64
+	Id         int     `json:"id"`
+	MethodName string  `json:"methodName"`
+	Cost       float64 `json:"cost"`
 }
 
 // AllShippingMethods returns all shipping methods from the database as []ShippingMethod

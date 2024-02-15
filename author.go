@@ -9,8 +9,8 @@ import (
 )
 
 type Author struct {
-	Id         int
-	AuthorName string
+	Id         int    `json:"id"`
+	AuthorName string `json:"authorName"`
 }
 
 // AllAuthors returns all authors from the database as []Author

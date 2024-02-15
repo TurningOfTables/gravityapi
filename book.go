@@ -11,19 +11,19 @@ import (
 )
 
 type Book struct {
-	Id              int
-	Title           string
-	Isbn            string
-	LanguageId      int
-	NumPages        int
-	PublicationDate time.Time
-	PublisherId     int
+	Id              int       `json:"id"`
+	Title           string    `json:"title"`
+	Isbn            string    `json:"isbn"`
+	LanguageId      int       `json:"languageId"`
+	NumPages        int       `json:"numPages"`
+	PublicationDate time.Time `json:"publicationDate"`
+	PublisherId     int       `json:"publisherId"`
 }
 
 type Language struct {
-	Id           int
-	LanguageCode string
-	LanguageName string
+	Id           int    `json:"id"`
+	LanguageCode string `json:"languageCode"`
+	LanguageName string `json:"languageName"`
 }
 
 // AllBooks returns all books from the database as []Book
