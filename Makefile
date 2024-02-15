@@ -24,7 +24,14 @@ local-air-run:
 
 # Builds and runs app and db in docker
 docker-build-run:
-	docker compose up --build
+	docker-compose build
+	docker-compose up
+
+docker-test:
+	docker-compose build
+	docker-compose up -d
+	docker exec -it gravityapi-web-1 go test .
+
 
 # Builds only the db
 docker-build-db:
