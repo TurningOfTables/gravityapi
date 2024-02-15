@@ -15,7 +15,7 @@ type Searchable interface {
 
 // HandleSearch gives us a more generic way to perform searches without defining a handler for each model.
 // It takes validSearchTerms, a Searchable model and a search function, then returns the resulting []s Searchable
-func HandleSearch[s Searchable](db *pgx.Conn, c fiber.Ctx, validSearchTerms []string, searchModel s, searchFunc func(db *pgx.Conn, c fiber.Ctx, searchTerm, searchValue string) ([]s, error)) ([]s, error) {
+func HandleSearch[s Searchable](db *pgx.Conn, c fiber.Ctx, validSearchTerms []string, searchModel s, searchFunc func(db *pgx.Conn, c fiber.Ctx, searchTerm, searchValue string) ([]s, error)) ([]s, *fiber.Error) {
 	var results []s
 
 	// Determine how many search terms were given, excluding length and offset params

@@ -108,7 +108,7 @@ func connectToDb() *pgx.Conn {
 // handleAllCountries handles GET /v1/countries
 func handleAllCountries(c fiber.Ctx, db *pgx.Conn) error {
 	countries, err := AllCountries(db, c)
-	if err == nil {
+	if err != nil {
 		return c.Status(fiber.ErrInternalServerError.Code).JSON(fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving countries: %v", err.Error())))
 	}
 	return c.JSON(countries)
@@ -133,7 +133,7 @@ func handleAuthorsSearch(c fiber.Ctx, db *pgx.Conn) error {
 
 	res, err := HandleSearch(db, c, validAuthorSearchTerms, Author{}, AuthorsBySearchTerm)
 	if err != nil {
-		return err
+		return c.Status(err.Code).JSON(err)
 	}
 
 	return c.JSON(res)
@@ -157,7 +157,7 @@ func handleBooksSearch(c fiber.Ctx, db *pgx.Conn) error {
 
 	res, err := HandleSearch(db, c, validBookSearchTerms, Book{}, BooksBySearchTerm)
 	if err != nil {
-		return err
+		return c.Status(err.Code).JSON(err)
 	}
 
 	return c.JSON(res)
@@ -181,7 +181,7 @@ func handleCustomersSearch(c fiber.Ctx, db *pgx.Conn) error {
 
 	res, err := HandleSearch(db, c, validCustomerSearchTerms, Customer{}, CustomersBySearchTerm)
 	if err != nil {
-		return err
+		return c.Status(err.Code).JSON(err)
 	}
 
 	return c.JSON(res)
