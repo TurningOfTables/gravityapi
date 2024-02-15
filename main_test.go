@@ -168,8 +168,8 @@ func TestSearchErrors(t *testing.T) {
 		expectedStatusCode int
 		expectedMessage    string
 	}{
-		{search: "/v1/customers/search?foo=1&bar=2", expectedStatusCode: fiber.ErrBadRequest.Code, expectedMessage: "Multiple search terms not supported"},
-		{search: "/v1/customers/search?foo=1", expectedStatusCode: fiber.ErrBadRequest.Code, expectedMessage: "No valid search term / value found. Valid search terms: [email]"},
+		{search: "/v1/customers/search?foo=1&bar=2", expectedStatusCode: fiber.ErrBadRequest.Code, expectedMessage: "{\"code\":400,\"message\":\"Multiple search terms not supported\"}"},
+		{search: "/v1/customers/search?foo=1", expectedStatusCode: fiber.ErrBadRequest.Code, expectedMessage: "{\"code\":400,\"message\":\"No valid search term / value found. Valid search terms: [email]\"}"},
 	}
 
 	r := initRouter()
