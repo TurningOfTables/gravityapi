@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
 	"time"
 
 	"github.com/gofiber/fiber/v3"
@@ -73,12 +72,6 @@ func BooksBySearchTerm(db *pgx.Conn, c fiber.Ctx, searchTerm, searchValue string
 	default:
 		return books, errors.New("invalid search term")
 	}
-
-	log.Print(searchTerm)
-	log.Print(searchValue)
-	log.Print(c.Locals("limit"))
-	log.Print(c.Locals("offset"))
-	log.Print(sql)
 
 	rows, err := db.Query(context.Background(), sql, searchValue, c.Locals("limit"), c.Locals("offset"))
 	if err != nil {

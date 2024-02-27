@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/stretchr/objx"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -85,16 +86,14 @@ func TestBookSearch(t *testing.T) {
 				t.Error(err)
 			}
 
-			var books []Book
 			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				t.Error(err)
 			}
 
-			json.Unmarshal(body, &books)
+			a, _ := objx.FromJSON(string(body))
 
-			assert.Equal(t, test.expectedTitle, books[0].Title)
-
+			assert.Equal(t, test.expectedTitle, a.Get("data[0].title").Str())
 		})
 	}
 
@@ -118,15 +117,14 @@ func TestAuthorSearch(t *testing.T) {
 				t.Error(err)
 			}
 
-			var authors []Author
 			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				t.Error(err)
 			}
 
-			json.Unmarshal(body, &authors)
+			a, _ := objx.FromJSON(string(body))
 
-			assert.Equal(t, test.expectedAuthor, authors[0].AuthorName)
+			assert.Equal(t, test.expectedAuthor, a.Get("data[0].authorName").Str())
 		})
 	}
 }
@@ -149,15 +147,14 @@ func TestCustomerSearch(t *testing.T) {
 				t.Error(err)
 			}
 
-			var customers []Customer
 			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				t.Error(err)
 			}
 
-			json.Unmarshal(body, &customers)
+			a, _ := objx.FromJSON(string(body))
 
-			assert.Equal(t, test.expectedCustomer, customers[0].LastName)
+			assert.Equal(t, test.expectedCustomer, a.Get("data[0].lastName").Str())
 		})
 	}
 }
@@ -168,8 +165,8 @@ func TestSearchErrors(t *testing.T) {
 		expectedStatusCode int
 		expectedMessage    string
 	}{
-		{search: "/v1/customers/search?foo=1&bar=2", expectedStatusCode: fiber.ErrBadRequest.Code, expectedMessage: "{\"code\":400,\"message\":\"Multiple search terms not supported\"}"},
-		{search: "/v1/customers/search?foo=1", expectedStatusCode: fiber.ErrBadRequest.Code, expectedMessage: "{\"code\":400,\"message\":\"No valid search term / value found. Valid search terms: [email]\"}"},
+		{search: "/v1/customers/search?foo=1&bar=2", expectedStatusCode: fiber.ErrBadRequest.Code, expectedMessage: "multiple search terms not supported"},
+		{search: "/v1/customers/search?foo=1", expectedStatusCode: fiber.ErrBadRequest.Code, expectedMessage: "no valid search term / value found. valid search terms: [email]"},
 	}
 
 	r := initRouter()
@@ -182,13 +179,16 @@ func TestSearchErrors(t *testing.T) {
 				t.Error(err)
 			}
 
+			var gr GravityResponse
 			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				t.Error(err)
 			}
 
+			json.Unmarshal(body, &gr)
+
 			assert.Equal(t, test.expectedStatusCode, resp.StatusCode)
-			assert.Equal(t, test.expectedMessage, string(body))
+			assert.Equal(t, test.expectedMessage, gr.Errors[0].Detail)
 		})
 	}
 }
@@ -221,10 +221,9 @@ func TestLimit(t *testing.T) {
 				t.Error(err)
 			}
 
-			var books []Book
-			json.Unmarshal(body, &books)
+			a, _ := objx.FromJSON(string(body))
 
-			assert.Len(t, books, test.expectedSize)
+			assert.Len(t, a["data"], test.expectedSize)
 		})
 	}
 
@@ -259,10 +258,9 @@ func TestOffset(t *testing.T) {
 				t.Error(err)
 			}
 
-			var books []Book
-			json.Unmarshal(body, &books)
+			a, _ := objx.FromJSON(string(body))
 
-			assert.Equal(t, test.expectedFirstId, books[0].Id)
+			assert.Equal(t, test.expectedFirstId, a.Get("data[0].id").Int())
 		})
 	}
 
@@ -294,11 +292,10 @@ func TestCombinedLimitOffset(t *testing.T) {
 				t.Error(err)
 			}
 
-			var books []Book
-			json.Unmarshal(body, &books)
+			a, _ := objx.FromJSON(string(body))
 
-			assert.Len(t, books, test.expectedSize)
-			assert.Equal(t, test.expectedFirstId, books[0].Id)
+			assert.Len(t, a["data"], test.expectedSize)
+			assert.Equal(t, test.expectedFirstId, a.Get("data[0].id").Int())
 		})
 	}
 }

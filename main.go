@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 
@@ -19,7 +20,6 @@ var responseSizeLimit int = 100
 
 func main() {
 	flag.Parse()
-
 	r := initRouter()
 	r.Listen(os.Getenv("GRAVITY_API_APP_HOST"))
 }
@@ -109,9 +109,16 @@ func connectToDb() *pgx.Conn {
 func handleAllCountries(c fiber.Ctx, db *pgx.Conn) error {
 	countries, err := AllCountries(db, c)
 	if err != nil {
-		return c.Status(fiber.ErrInternalServerError.Code).JSON(fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving countries: %v", err.Error())))
+		errorRes := &GravityResponse{Errors: []GravityError{{
+			Status: fmt.Sprint(http.StatusInternalServerError),
+			Code:   "COUNTRIES-01",
+			Title:  "Error retrieving countries",
+			Detail: err.Error(),
+		}}}
+		return SendGravityResponse(c, errorRes)
 	}
-	return c.JSON(countries)
+
+	return SendGravityResponse(c, &GravityResponse{Data: countries})
 }
 
 // /v1/authors
@@ -121,9 +128,16 @@ func handleAllAuthors(c fiber.Ctx, db *pgx.Conn) error {
 
 	authors, err := AllAuthors(db, c)
 	if err != nil {
-		return c.Status(fiber.ErrInternalServerError.Code).JSON(fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving authors: %v", err.Error())))
+		errorRes := &GravityResponse{Errors: []GravityError{{
+			Status: fmt.Sprint(http.StatusInternalServerError),
+			Code:   "AUTHORS-01",
+			Title:  "Error retrieving authors",
+			Detail: err.Error(),
+		}}}
+		return SendGravityResponse(c, errorRes)
 	}
-	return c.JSON(authors)
+
+	return SendGravityResponse(c, &GravityResponse{Data: authors})
 }
 
 // handleAuthorsSearch handles GET /v1/authors/search?<searchTerm>=<searchValue>
@@ -133,10 +147,16 @@ func handleAuthorsSearch(c fiber.Ctx, db *pgx.Conn) error {
 
 	res, err := HandleSearch(db, c, validAuthorSearchTerms, Author{}, AuthorsBySearchTerm)
 	if err != nil {
-		return c.Status(err.Code).JSON(err)
+		errorRes := &GravityResponse{Errors: []GravityError{{
+			Status: fmt.Sprint(err.Code),
+			Code:   "AUTHORS-02",
+			Title:  "Error searching authors",
+			Detail: err.Error(),
+		}}}
+		return SendGravityResponse(c, errorRes)
 	}
 
-	return c.JSON(res)
+	return SendGravityResponse(c, &GravityResponse{Data: res})
 }
 
 // /v1/books
@@ -145,9 +165,16 @@ func handleAuthorsSearch(c fiber.Ctx, db *pgx.Conn) error {
 func handleAllBooks(c fiber.Ctx, db *pgx.Conn) error {
 	books, err := AllBooks(db, c)
 	if err != nil {
-		return c.Status(fiber.ErrInternalServerError.Code).JSON(fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving books: %v", err.Error())))
+		errorRes := &GravityResponse{Errors: []GravityError{{
+			Status: fmt.Sprint(http.StatusInternalServerError),
+			Code:   "BOOKS-01",
+			Title:  "Error retrieving books",
+			Detail: err.Error(),
+		}}}
+		return SendGravityResponse(c, errorRes)
 	}
-	return c.JSON(books)
+
+	return SendGravityResponse(c, &GravityResponse{Data: books})
 }
 
 // handleBooksSearch handles GET /v1/books/search?<searchTerm>=<searchValue>
@@ -157,10 +184,16 @@ func handleBooksSearch(c fiber.Ctx, db *pgx.Conn) error {
 
 	res, err := HandleSearch(db, c, validBookSearchTerms, Book{}, BooksBySearchTerm)
 	if err != nil {
-		return c.Status(err.Code).JSON(err)
+		errorRes := &GravityResponse{Errors: []GravityError{{
+			Status: fmt.Sprint(err.Code),
+			Code:   "BOOKS-02",
+			Title:  "Error searching books",
+			Detail: err.Error(),
+		}}}
+		return SendGravityResponse(c, errorRes)
 	}
 
-	return c.JSON(res)
+	return SendGravityResponse(c, &GravityResponse{Data: res})
 }
 
 // /v1/customers
@@ -169,9 +202,16 @@ func handleBooksSearch(c fiber.Ctx, db *pgx.Conn) error {
 func handleAllCustomers(c fiber.Ctx, db *pgx.Conn) error {
 	customers, err := AllCustomers(db, c)
 	if err != nil {
-		return c.Status(fiber.ErrInternalServerError.Code).JSON(fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving customers: %v", err.Error())))
+		errorRes := &GravityResponse{Errors: []GravityError{{
+			Status: fmt.Sprint(http.StatusInternalServerError),
+			Code:   "CUSTOMERS-01",
+			Title:  "Error retrieving customers",
+			Detail: err.Error(),
+		}}}
+		return SendGravityResponse(c, errorRes)
 	}
-	return c.JSON(customers)
+
+	return SendGravityResponse(c, &GravityResponse{Data: customers})
 }
 
 // handleCustomerSearch handles GET /v1/customers/search?<searchTerm>=<searchValue>
@@ -181,10 +221,16 @@ func handleCustomersSearch(c fiber.Ctx, db *pgx.Conn) error {
 
 	res, err := HandleSearch(db, c, validCustomerSearchTerms, Customer{}, CustomersBySearchTerm)
 	if err != nil {
-		return c.Status(err.Code).JSON(err)
+		errorRes := &GravityResponse{Errors: []GravityError{{
+			Status: fmt.Sprint(err.Code),
+			Code:   "CUSTOMERS-02",
+			Title:  "Error searching customers",
+			Detail: err.Error(),
+		}}}
+		return SendGravityResponse(c, errorRes)
 	}
 
-	return c.JSON(res)
+	return SendGravityResponse(c, &GravityResponse{Data: res})
 }
 
 // /v1/publishers
@@ -193,9 +239,16 @@ func handleCustomersSearch(c fiber.Ctx, db *pgx.Conn) error {
 func handleAllPublishers(c fiber.Ctx, db *pgx.Conn) error {
 	publishers, err := AllPublishers(db, c)
 	if err != nil {
-		return c.Status(fiber.ErrInternalServerError.Code).JSON(fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving publishers: %v", err.Error())))
+		errorRes := &GravityResponse{Errors: []GravityError{{
+			Status: fmt.Sprint(http.StatusInternalServerError),
+			Code:   "PUBLISHERS-01",
+			Title:  "Error retrieving publishers",
+			Detail: err.Error(),
+		}}}
+		return SendGravityResponse(c, errorRes)
 	}
-	return c.JSON(publishers)
+
+	return SendGravityResponse(c, &GravityResponse{Data: publishers})
 }
 
 // /v1/shipping-methods
@@ -204,9 +257,16 @@ func handleAllPublishers(c fiber.Ctx, db *pgx.Conn) error {
 func handleAllShippingMethods(c fiber.Ctx, db *pgx.Conn) error {
 	shippingMethods, err := AllShippingMethods(db, c)
 	if err != nil {
-		return c.Status(fiber.ErrInternalServerError.Code).JSON(fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving shipping methods: %v", err.Error())))
+		errorRes := &GravityResponse{Errors: []GravityError{{
+			Status: fmt.Sprint(http.StatusInternalServerError),
+			Code:   "SHIPPING-METHODS-01",
+			Title:  "Error retrieving shipping methods",
+			Detail: err.Error(),
+		}}}
+		return SendGravityResponse(c, errorRes)
 	}
-	return c.JSON(shippingMethods)
+
+	return SendGravityResponse(c, &GravityResponse{Data: shippingMethods})
 }
 
 // parseLimitOffset checks for query params 'limit' and 'offset'

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/jackc/pgx/v5"
@@ -26,25 +25,23 @@ func HandleSearch[s Searchable](db *pgx.Conn, c fiber.Ctx, validSearchTerms []st
 		}
 	}
 
-	log.Print(numSearchTerms)
-
 	if numSearchTerms > 1 {
-		return results, fiber.NewError(fiber.ErrBadRequest.Code, "Multiple search terms not supported")
+		return results, fiber.NewError(fiber.ErrBadRequest.Code, "multiple search terms not supported")
 	}
 
 	for _, searchTerm := range validSearchTerms {
 		if c.Query(searchTerm) != "" {
 			results, err := searchFunc(db, c, searchTerm, c.Query(searchTerm))
 			if len(results) == 0 && err == nil {
-				return results, fiber.NewError(fiber.ErrNotFound.Code, "No results found")
+				return results, fiber.NewError(fiber.ErrNotFound.Code, "no results found")
 			}
 			if err != nil {
-				return results, fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("Error retrieving by search %v", err.Error()))
+				return results, fiber.NewError(fiber.ErrInternalServerError.Code, fmt.Sprintf("error retrieving by search %v", err.Error()))
 			}
 			return results, nil
 		}
 	}
 
-	return results, fiber.NewError(fiber.ErrBadRequest.Code, fmt.Sprintf("No valid search term / value found. Valid search terms: %v", validSearchTerms))
+	return results, fiber.NewError(fiber.ErrBadRequest.Code, fmt.Sprintf("no valid search term / value found. valid search terms: %v", validSearchTerms))
 
 }
