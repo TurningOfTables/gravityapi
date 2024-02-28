@@ -10,8 +10,13 @@ test-coverage:
 	go test . -coverprofile=c.out
 	go tool cover -func=c.out
 
+# Calculates test coverage and displays breakdown in the browser
+test-coverage-browser:
+	go test . -coverprofile=c.out
+	go tool cover -html=c.out
+
 # Standard local run
-local-run:
+run-local:
 	go run .
 
 # Build binary
@@ -19,24 +24,24 @@ build:
 	go build -o
 
 # Standard local run with air to allow hot reloading
-local-air-run:
+run-air:
 	air
 
 # Builds and runs app and db in docker
-docker-build-run:
+build-run-docker:
 	docker-compose build
 	docker-compose up
 
-docker-test:
+test-docker:
 	docker-compose build
 	docker-compose up -d
-	docker exec -it gravityapi-web-1 go test .
+	docker exec -it gravityapi-web-1 go test -v .
 
 
 # Builds only the db
-docker-build-db:
+build-docker-db:
 	docker build --tag gravityapi_db ./db
 
 # Builds only the app
-docker-build-app:
+build-docker-app:
 	docker build --tag gravityapi .

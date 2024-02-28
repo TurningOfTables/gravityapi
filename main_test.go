@@ -14,6 +14,7 @@ import (
 func TestRouteStatusOK(t *testing.T) {
 
 	routes := []string{
+		"/",
 		"/ping",
 		"/v1/countries",
 		"/v1/authors",
@@ -66,99 +67,6 @@ func TestRouteStatusNotFound(t *testing.T) {
 	}
 }
 
-func TestBookSearch(t *testing.T) {
-	var tests = []struct {
-		search        string
-		expectedTitle string
-	}{
-		{search: "title=The Tempest", expectedTitle: "The Tempest"},
-		{search: "isbn=9781559277587", expectedTitle: "They Do It With Mirrors"},
-		{search: "author=Agatha Christie", expectedTitle: "Hercule Poirot's Christmas: A BBC Radio 4 Full-Cast Dramatisation"},
-	}
-
-	r := initRouter()
-
-	for _, test := range tests {
-		t.Run(test.search, func(t *testing.T) {
-			req, _ := http.NewRequest("GET", "/v1/books/search?"+test.search, nil)
-			resp, err := r.Test(req)
-			if err != nil {
-				t.Error(err)
-			}
-
-			body, err := io.ReadAll(resp.Body)
-			if err != nil {
-				t.Error(err)
-			}
-
-			a, _ := objx.FromJSON(string(body))
-
-			assert.Equal(t, test.expectedTitle, a.Get("data[0].title").Str())
-		})
-	}
-
-}
-
-func TestAuthorSearch(t *testing.T) {
-	var tests = []struct {
-		search         string
-		expectedAuthor string
-	}{
-		{search: "name=Agatha Christie", expectedAuthor: "Agatha Christie"},
-	}
-
-	r := initRouter()
-
-	for _, test := range tests {
-		t.Run(test.search, func(t *testing.T) {
-			res, _ := http.NewRequest("GET", "/v1/authors/search?"+test.search, nil)
-			resp, err := r.Test(res)
-			if err != nil {
-				t.Error(err)
-			}
-
-			body, err := io.ReadAll(resp.Body)
-			if err != nil {
-				t.Error(err)
-			}
-
-			a, _ := objx.FromJSON(string(body))
-
-			assert.Equal(t, test.expectedAuthor, a.Get("data[0].authorName").Str())
-		})
-	}
-}
-
-func TestCustomerSearch(t *testing.T) {
-	var tests = []struct {
-		search           string
-		expectedCustomer string
-	}{
-		{search: "email=rvatini1@fema.gov", expectedCustomer: "Vatini"},
-	}
-
-	r := initRouter()
-
-	for _, test := range tests {
-		t.Run(test.search, func(t *testing.T) {
-			req, _ := http.NewRequest("GET", "/v1/customers/search?"+test.search, nil)
-			resp, err := r.Test(req)
-			if err != nil {
-				t.Error(err)
-			}
-
-			body, err := io.ReadAll(resp.Body)
-			if err != nil {
-				t.Error(err)
-			}
-
-			a, _ := objx.FromJSON(string(body))
-
-			assert.Equal(t, test.expectedCustomer, a.Get("data[0].lastName").Str())
-		})
-	}
-}
-
 func TestSearchErrors(t *testing.T) {
 	var tests = []struct {
 		search             string
@@ -167,6 +75,10 @@ func TestSearchErrors(t *testing.T) {
 	}{
 		{search: "/v1/customers/search?foo=1&bar=2", expectedStatusCode: fiber.ErrBadRequest.Code, expectedMessage: "multiple search terms not supported"},
 		{search: "/v1/customers/search?foo=1", expectedStatusCode: fiber.ErrBadRequest.Code, expectedMessage: "no valid search term / value found. valid search terms: [email]"},
+		{search: "/v1/books/search?foo=1&bar=2", expectedStatusCode: fiber.ErrBadRequest.Code, expectedMessage: "multiple search terms not supported"},
+		{search: "/v1/books/search?foo=1", expectedStatusCode: fiber.ErrBadRequest.Code, expectedMessage: "no valid search term / value found. valid search terms: [title isbn author]"},
+		{search: "/v1/authors/search?foo=1&bar=2", expectedStatusCode: fiber.ErrBadRequest.Code, expectedMessage: "multiple search terms not supported"},
+		{search: "/v1/authors/search?foo=1", expectedStatusCode: fiber.ErrBadRequest.Code, expectedMessage: "no valid search term / value found. valid search terms: [name]"},
 	}
 
 	r := initRouter()

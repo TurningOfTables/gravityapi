@@ -31,6 +31,7 @@ func SendGravityResponse(c fiber.Ctx, gr *GravityResponse) error {
 	gr.Meta = make(map[string]string)
 	gr.Meta["timestamp"] = time.Now().Format(time.RFC3339)
 
+	// ensures that the response is an empty array if there is no data
 	if gr.Data == nil {
 		gr.Data = []interface{}{}
 	}
@@ -38,7 +39,7 @@ func SendGravityResponse(c fiber.Ctx, gr *GravityResponse) error {
 	if len(gr.Errors) == 0 {
 		gr.Errors = []GravityError{}
 	} else {
-		statusInt, err := strconv.Atoi(gr.Errors[0].Status)
+		statusInt, err := strconv.Atoi(gr.Errors[0].Status) // We set the overall http status response to that of the first GravityError
 		if err == nil {
 			httpStatus = statusInt
 		}
